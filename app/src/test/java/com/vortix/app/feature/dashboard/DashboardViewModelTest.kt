@@ -86,16 +86,13 @@ class DashboardViewModelTest {
                 }
             }
         } as Context
-        val capacityReader = object : SystemDesignCapacityReader(fakeContext) {
-            override fun readSystemDesignCapacityMah(): Int? = null
-        }
         return DashboardViewModel(
             observeLatestSnapshot = ObserveLatestBatterySnapshotUseCase(repository),
             observeRecentSnapshots = ObserveRecentBatterySnapshotsUseCase(repository),
             refreshSnapshot = RefreshBatterySnapshotUseCase(repository),
             batteryRepository = repository,
             settingsRepository = settingsRepository,
-            systemCapacityReader = capacityReader
+            systemCapacityReader = SystemDesignCapacityReader(fakeContext)
         )
     }
 

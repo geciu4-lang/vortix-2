@@ -71,23 +71,31 @@ class DashboardViewModelTest {
         val fakeContext = Proxy.newProxyInstance(
             Context::class.java.classLoader,
             arrayOf(Context::class.java)
-        ) { _, method, _ ->
-            when (method.returnType) {
-                Boolean::class.javaPrimitiveType -> false
-                Int::class.javaPrimitiveType -> 0
-                Long::class.javaPrimitiveType -> 0L
-                Float::class.javaPrimitiveType -> 0f
-                Double::class.javaPrimitiveType -> 0.0
-                else -> null
+        ) { proxy, method, args ->
+            when (method.name) {
+                "toString" -> "FakeContext"
+                "hashCode" -> System.identityHashCode(proxy)
+                "equals" -> proxy === args?.firstOrNull()
+                else -> when (method.returnType) {
+                    Boolean::class.javaPrimitiveType -> false
+                    Int::class.javaPrimitiveType -> 0
+                    Long::class.javaPrimitiveType -> 0L
+                    Float::class.javaPrimitiveType -> 0f
+                    Double::class.javaPrimitiveType -> 0.0
+                    else -> null
+                }
             }
         } as Context
+        val capacityReader = object : SystemDesignCapacityReader(fakeContext) {
+            override fun readSystemDesignCapacityMah(): Int? = null
+        }
         return DashboardViewModel(
             observeLatestSnapshot = ObserveLatestBatterySnapshotUseCase(repository),
             observeRecentSnapshots = ObserveRecentBatterySnapshotsUseCase(repository),
             refreshSnapshot = RefreshBatterySnapshotUseCase(repository),
             batteryRepository = repository,
             settingsRepository = settingsRepository,
-            systemCapacityReader = SystemDesignCapacityReader(fakeContext)
+            systemCapacityReader = capacityReader
         )
     }
 

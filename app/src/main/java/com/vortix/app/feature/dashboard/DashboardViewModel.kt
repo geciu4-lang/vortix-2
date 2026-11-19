@@ -43,7 +43,7 @@ class DashboardViewModel @Inject constructor(
                 }
             } catch (cancelled: CancellationException) {
                 throw cancelled
-            } catch (_: Exception) {
+            } catch (_: Throwable) {
                 // Sistem kapasitesi okunamazsa mevcut değer korunur.
             }
         }

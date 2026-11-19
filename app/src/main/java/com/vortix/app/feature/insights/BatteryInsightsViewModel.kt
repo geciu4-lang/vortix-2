@@ -81,7 +81,6 @@ class BatteryInsightsViewModel @Inject constructor(
         }
     }
 
-
     fun markBatteryReplaced() {
         viewModelScope.launch {
             val timestamp = System.currentTimeMillis()

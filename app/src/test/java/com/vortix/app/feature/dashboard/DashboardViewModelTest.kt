@@ -1,7 +1,5 @@
 package com.vortix.app.feature.dashboard
 
-import android.content.Context
-import android.content.ContextWrapper
 import com.vortix.app.data.battery.SystemDesignCapacityReader
 import com.vortix.app.domain.model.BatterySnapshot
 import com.vortix.app.domain.model.BatteryStatus
@@ -12,7 +10,6 @@ import com.vortix.app.domain.repository.EnergySettingsRepository
 import com.vortix.app.domain.usecase.ObserveLatestBatterySnapshotUseCase
 import com.vortix.app.domain.usecase.ObserveRecentBatterySnapshotsUseCase
 import com.vortix.app.domain.usecase.RefreshBatterySnapshotUseCase
-import java.lang.reflect.Proxy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -67,45 +64,15 @@ class DashboardViewModelTest {
         assertFalse(viewModel.uiState.value.isRefreshing)
     }
 
-    private fun createViewModel(repository: BatteryRepository): DashboardViewModel {
-        val settingsRepository = FakeSettingsRepository()
-        val proxyContext = Proxy.newProxyInstance(
-            Context::class.java.classLoader,
-            arrayOf(Context::class.java)
-        ) { proxy, method, args ->
-            when (method.name) {
-                "toString" -> "FakeContext"
-                "hashCode" -> System.identityHashCode(proxy)
-                "equals" -> proxy === args?.firstOrNull()
-                "getPackageName" -> "com.vortix.app"
-                else -> when (method.returnType) {
-                    Boolean::class.javaPrimitiveType, Boolean::class.javaObjectType -> false
-                    Byte::class.javaPrimitiveType, Byte::class.javaObjectType -> 0.toByte()
-                    Short::class.javaPrimitiveType, Short::class.javaObjectType -> 0.toShort()
-                    Char::class.javaPrimitiveType, Char::class.javaObjectType -> '\u0000'
-                    Int::class.javaPrimitiveType, Int::class.javaObjectType -> 0
-                    Long::class.javaPrimitiveType, Long::class.javaObjectType -> 0L
-                    Float::class.javaPrimitiveType, Float::class.javaObjectType -> 0f
-                    Double::class.javaPrimitiveType, Double::class.javaObjectType -> 0.0
-                    String::class.java -> ""
-                    else -> null
-                }
-            }
-        } as Context
-
-        val safeContext = object : ContextWrapper(proxyContext) {
-            override fun getApplicationContext(): Context = this
-        }
-
-        return DashboardViewModel(
+    private fun createViewModel(repository: BatteryRepository): DashboardViewModel =
+        DashboardViewModel(
             observeLatestSnapshot = ObserveLatestBatterySnapshotUseCase(repository),
             observeRecentSnapshots = ObserveRecentBatterySnapshotsUseCase(repository),
             refreshSnapshot = RefreshBatterySnapshotUseCase(repository),
             batteryRepository = repository,
-            settingsRepository = settingsRepository,
-            systemCapacityReader = SystemDesignCapacityReader(safeContext)
+            settingsRepository = FakeSettingsRepository(),
+            systemCapacityReader = SystemDesignCapacityReader { null }
         )
-    }
 
     private fun sampleSnapshot() = BatterySnapshot(
         capturedAtEpochMillis = 1_800_000_000_000L,

@@ -33,13 +33,18 @@ class DashboardViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            // Cihazın sistem PowerProfile değerini ilk açılışta kontrol et
-            val systemCap = systemCapacityReader.readSystemDesignCapacityMah()
-            if (systemCap != null) {
-                val currentSaved = settingsRepository.designCapacityMah.first()
-                if (currentSaved == 5000 && systemCap != 5000) {
-                    settingsRepository.setDesignCapacityMah(systemCap)
+            try {
+                val systemCap = systemCapacityReader.readSystemDesignCapacityMah()
+                if (systemCap != null) {
+                    val currentSaved = settingsRepository.designCapacityMah.first()
+                    if (currentSaved == 5000 && systemCap != 5000) {
+                        settingsRepository.setDesignCapacityMah(systemCap)
+                    }
                 }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                // Sistem kapasitesi okunamazsa mevcut değer korunur.
             }
         }
 
@@ -67,15 +72,7 @@ class DashboardViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            batteryRepository.observeLiveBattery()
-                .catch { cause -> if (cause is CancellationException) throw cause }
-                .collect { liveSnapshot ->
-                    _uiState.update { current -> current.copy(snapshot = liveSnapshot) }
-                }
-        }
-
-        viewModelScope.launch {
-            observeRecentSnapshots(24)
+            observeRecentSnapshots(limit = 24)
                 .catch { cause -> if (cause is CancellationException) throw cause }
                 .collect { list ->
                     _uiState.update { current -> current.copy(recentSnapshots = list) }
@@ -110,7 +107,14 @@ class DashboardViewModel @Inject constructor(
 
     fun clearHistory() {
         viewModelScope.launch {
-            runCatching { batteryRepository.clearHistory() }
+            try {
+                batteryRepository.pruneHistory(System.currentTimeMillis())
+                _uiState.update { it.copy(recentSnapshots = emptyList()) }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                _uiState.update { it.copy(errorMessage = "Geçmiş verileri temizlenemedi.") }
+            }
         }
     }
 }

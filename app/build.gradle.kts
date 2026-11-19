@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.vortix.app"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.vortix.app"

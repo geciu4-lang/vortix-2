@@ -78,6 +78,9 @@ class EnergyControlsViewModelTest {
         val viewModel = EnergyControlsViewModel(FakeSettings(), FakeScheduler(), usage)
         runCurrent()
 
+        viewModel.refreshUsageApps()
+        runCurrent()
+
         assertTrue(viewModel.uiState.value.hasUsageAccess)
         assertEquals(expected, viewModel.uiState.value.topApps)
     }

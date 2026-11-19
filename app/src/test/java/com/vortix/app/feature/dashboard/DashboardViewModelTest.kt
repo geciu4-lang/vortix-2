@@ -76,16 +76,12 @@ class DashboardViewModelTest {
                 "toString" -> "FakeContext"
                 "hashCode" -> System.identityHashCode(proxy)
                 "equals" -> proxy === args?.firstOrNull()
-                else -> when (method.returnType) {
-                    Boolean::class.javaPrimitiveType -> false
-                    Int::class.javaPrimitiveType -> 0
-                    Long::class.javaPrimitiveType -> 0L
-                    Float::class.javaPrimitiveType -> 0f
-                    Double::class.javaPrimitiveType -> 0.0
-                    else -> null
-                }
+                "getApplicationContext" -> proxy
+                "getPackageName" -> "com.vortix.app"
+                else -> defaultValueFor(method.returnType)
             }
         } as Context
+
         return DashboardViewModel(
             observeLatestSnapshot = ObserveLatestBatterySnapshotUseCase(repository),
             observeRecentSnapshots = ObserveRecentBatterySnapshotsUseCase(repository),
@@ -94,6 +90,19 @@ class DashboardViewModelTest {
             settingsRepository = settingsRepository,
             systemCapacityReader = SystemDesignCapacityReader(fakeContext)
         )
+    }
+
+    private fun defaultValueFor(type: Class<*>): Any? = when (type) {
+        Boolean::class.javaPrimitiveType, java.lang.Boolean::class.java -> false
+        Byte::class.javaPrimitiveType, java.lang.Byte::class.java -> 0.toByte()
+        Short::class.javaPrimitiveType, java.lang.Short::class.java -> 0.toShort()
+        Char::class.javaPrimitiveType, java.lang.Character::class.java -> '\u0000'
+        Int::class.javaPrimitiveType, java.lang.Integer::class.java -> 0
+        Long::class.javaPrimitiveType, java.lang.Long::class.java -> 0L
+        Float::class.javaPrimitiveType, java.lang.Float::class.java -> 0f
+        Double::class.javaPrimitiveType, java.lang.Double::class.java -> 0.0
+        String::class.java -> ""
+        else -> null
     }
 
     private fun sampleSnapshot() = BatterySnapshot(

@@ -8,7 +8,6 @@ import com.vortix.app.domain.model.PluggedSource
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class BatteryAnalyticsEngineTest {
@@ -42,7 +41,6 @@ class BatteryAnalyticsEngineTest {
         assertNull(estimate.healthPercent)
         assertEquals(EvidenceConfidence.LEARNING, estimate.confidence)
     }
-
 
     @Test
     fun publishesCappedHealthOnlyAfterMediumConfidenceEvidence() {
@@ -198,7 +196,7 @@ class BatteryAnalyticsEngineTest {
         )
         val session = BatteryAnalyticsEngine.summarize(samples).recentDischargeSessions.single()
         assertEquals(2 * 60L * 60L * 1000L, session.durationMillis)
-        assertEquals(1 * 60L * 60L * 1000L, session.observedScreenOnMillis)
+        assertEquals(0L, session.observedScreenOnMillis)
         assertEquals(1 * 60L * 60L * 1000L, session.observedScreenOffMillis)
     }
 

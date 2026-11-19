@@ -22,6 +22,10 @@ class EnergySettingsRepositoryImpl @Inject constructor(
         prefs[MONITORING_ENABLED] ?: false
     }
 
+    override val chargeLimitEnabled: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[CHARGE_LIMIT_ENABLED] ?: false
+    }
+
     override val chargeTargetPercent: Flow<Int> = dataStore.data.map { prefs ->
         (prefs[CHARGE_TARGET_PERCENT] ?: DEFAULT_CHARGE_TARGET).coerceIn(70, 100)
     }
@@ -30,8 +34,28 @@ class EnergySettingsRepositoryImpl @Inject constructor(
         prefs[CHARGE_TARGET_ALERT_SENT] ?: false
     }
 
+    override val lowBatteryAlertEnabled: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[LOW_BATTERY_ALERT_ENABLED] ?: false
+    }
+
+    override val lowBatteryThresholdPercent: Flow<Int> = dataStore.data.map { prefs ->
+        (prefs[LOW_BATTERY_THRESHOLD_PERCENT] ?: DEFAULT_LOW_BATTERY_THRESHOLD).coerceIn(10, 40)
+    }
+
+    override val thermalAlertEnabled: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[THERMAL_ALERT_ENABLED] ?: false
+    }
+
+    override val thermalThresholdCelsius: Flow<Int> = dataStore.data.map { prefs ->
+        (prefs[THERMAL_THRESHOLD_CELSIUS] ?: DEFAULT_THERMAL_THRESHOLD).coerceIn(36, 48)
+    }
+
     override val thermalAlertSent: Flow<Boolean> = dataStore.data.map { prefs ->
         prefs[THERMAL_ALERT_SENT] ?: false
+    }
+
+    override val ecoGuardEnabled: Flow<Boolean> = dataStore.data.map { prefs ->
+        prefs[ECO_GUARD_ENABLED] ?: false
     }
 
     override val designCapacityMah: Flow<Int> = dataStore.data.map { prefs ->
@@ -55,6 +79,10 @@ class EnergySettingsRepositoryImpl @Inject constructor(
         dataStore.edit { it[MONITORING_ENABLED] = enabled }
     }
 
+    override suspend fun setChargeLimitEnabled(enabled: Boolean) {
+        dataStore.edit { it[CHARGE_LIMIT_ENABLED] = enabled }
+    }
+
     override suspend fun setChargeTargetPercent(percent: Int) {
         dataStore.edit { it[CHARGE_TARGET_PERCENT] = percent.coerceIn(70, 100) }
     }
@@ -63,8 +91,28 @@ class EnergySettingsRepositoryImpl @Inject constructor(
         dataStore.edit { it[CHARGE_TARGET_ALERT_SENT] = sent }
     }
 
+    override suspend fun setLowBatteryAlertEnabled(enabled: Boolean) {
+        dataStore.edit { it[LOW_BATTERY_ALERT_ENABLED] = enabled }
+    }
+
+    override suspend fun setLowBatteryThresholdPercent(percent: Int) {
+        dataStore.edit { it[LOW_BATTERY_THRESHOLD_PERCENT] = percent.coerceIn(10, 40) }
+    }
+
+    override suspend fun setThermalAlertEnabled(enabled: Boolean) {
+        dataStore.edit { it[THERMAL_ALERT_ENABLED] = enabled }
+    }
+
+    override suspend fun setThermalThresholdCelsius(celsius: Int) {
+        dataStore.edit { it[THERMAL_THRESHOLD_CELSIUS] = celsius.coerceIn(36, 48) }
+    }
+
     override suspend fun setThermalAlertSent(sent: Boolean) {
         dataStore.edit { it[THERMAL_ALERT_SENT] = sent }
+    }
+
+    override suspend fun setEcoGuardEnabled(enabled: Boolean) {
+        dataStore.edit { it[ECO_GUARD_ENABLED] = enabled }
     }
 
     override suspend fun setDesignCapacityMah(capacityMah: Int) {
@@ -91,12 +139,20 @@ class EnergySettingsRepositoryImpl @Inject constructor(
 
     private companion object {
         val MONITORING_ENABLED = booleanPreferencesKey("monitoring_enabled")
+        val CHARGE_LIMIT_ENABLED = booleanPreferencesKey("charge_limit_enabled")
         val CHARGE_TARGET_PERCENT = intPreferencesKey("charge_target_percent")
         val CHARGE_TARGET_ALERT_SENT = booleanPreferencesKey("charge_target_alert_sent")
+        val LOW_BATTERY_ALERT_ENABLED = booleanPreferencesKey("low_battery_alert_enabled")
+        val LOW_BATTERY_THRESHOLD_PERCENT = intPreferencesKey("low_battery_threshold_percent")
+        val THERMAL_ALERT_ENABLED = booleanPreferencesKey("thermal_alert_enabled")
+        val THERMAL_THRESHOLD_CELSIUS = intPreferencesKey("thermal_threshold_celsius")
         val THERMAL_ALERT_SENT = booleanPreferencesKey("thermal_alert_sent")
+        val ECO_GUARD_ENABLED = booleanPreferencesKey("eco_guard_enabled")
         val DESIGN_CAPACITY_MAH = intPreferencesKey("design_capacity_mah")
         val ENERGY_CHANGE_MARKERS = stringSetPreferencesKey("energy_change_markers")
         val BATTERY_BASELINE_AT = longPreferencesKey("battery_baseline_at_epoch_millis")
         const val DEFAULT_CHARGE_TARGET = 80
+        const val DEFAULT_LOW_BATTERY_THRESHOLD = 20
+        const val DEFAULT_THERMAL_THRESHOLD = 42
     }
 }
